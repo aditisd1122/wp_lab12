@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<products>
+  <product><id>1</id><name>Wireless Headphones</name><price>1499</price><category>Electronics</category><description>Comfortable wireless headphones for music, videos and everyday use.</description><emoji>🎧</emoji></product>
+  <product><id>2</id><name>Classic Wrist Watch</name><price>999</price><category>Accessories</category><description>A simple and stylish watch suitable for daily wear.</description><emoji>⌚</emoji></product>
+  <product><id>3</id><name>Travel Backpack</name><price>1299</price><category>Bags</category><description>A lightweight backpack with space for your daily essentials.</description><emoji>🎒</emoji></product>
+  <product><id>4</id><name>Running Shoes</name><price>1899</price><category>Footwear</category><description>Everyday sports shoes designed for comfort and movement.</description><emoji>👟</emoji></product>
+  <product><id>5</id><name>Desk Lamp</name><price>699</price><category>Home</category><description>A compact desk lamp for your study table or workspace.</description><emoji>💡</emoji></product>
+  <product><id>6</id><name>Water Bottle</name><price>299</price><category>Accessories</category><description>A reusable bottle to carry water while travelling or studying.</description><emoji>🧴</emoji></product>
+</products>

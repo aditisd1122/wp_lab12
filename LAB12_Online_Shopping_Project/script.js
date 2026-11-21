@@ -1,0 +1,28 @@
+let allProducts = [];
+const money = n => '₹' + Number(n).toLocaleString('en-IN');
+const getCart = () => JSON.parse(localStorage.getItem('shopEaseCart') || '[]');
+const saveCart = cart => { localStorage.setItem('shopEaseCart', JSON.stringify(cart)); updateCartCount(); };
+function updateCartCount(){const el=document.getElementById('cart-count');if(el)el.textContent=getCart().reduce((s,x)=>s+x.qty,0);}
+async function loadProducts(){
+  try{
+    const response=await fetch('products.xml');
+    if(!response.ok) throw new Error('Could not load products.xml');
+    const xmlText=await response.text();
+    const doc=new DOMParser().parseFromString(xmlText,'application/xml');
+    if(doc.querySelector('parsererror')) throw new Error('XML format error');
+    allProducts=[...doc.querySelectorAll('product')].map(p=>({id:p.querySelector('id').textContent,name:p.querySelector('name').textContent,price:Number(p.querySelector('price').textContent),category:p.querySelector('category').textContent,description:p.querySelector('description').textContent,emoji:p.querySelector('emoji').textContent}));
+    renderProducts(); renderDetails();
+  }catch(err){const list=document.getElementById('product-list');if(list)list.innerHTML='<p class="notice">Products could not load. Open this project using VS Code Live Server, not by double-clicking the HTML file.</p>';const detail=document.getElementById('product-detail');if(detail)detail.innerHTML='<p class="notice">Product information could not load. Please use Live Server.</p>';console.error(err);}
+}
+function renderProducts(){const list=document.getElementById('product-list');if(!list)return;list.innerHTML=allProducts.map(p=>`<article class="product-card"><div class="product-art">${p.emoji}</div><div class="product-info"><p class="eyebrow">${p.category}</p><h3>${p.name}</h3><p class="price">${money(p.price)}</p><div class="product-actions"><button class="btn" onclick="addToCart('${p.id}')">Add to cart</button><a class="btn btn-light" href="product-details.html?id=${p.id}">Details</a></div></div></article>`).join('');}
+function addToCart(id){const p=allProducts.find(x=>x.id===String(id));if(!p)return;const cart=getCart();const found=cart.find(x=>x.id===p.id);if(found)found.qty++;else cart.push({...p,qty:1});saveCart(cart);alert(p.name+' added to cart!');}
+function renderDetails(){const box=document.getElementById('product-detail');if(!box)return;const id=new URLSearchParams(location.search).get('id');const p=allProducts.find(x=>x.id===id)||allProducts[0];if(!p){box.textContent='Product not found.';return;}box.innerHTML=`<div class="detail-art">${p.emoji}</div><div><p class="eyebrow">${p.category}</p><h1>${p.name}</h1><p class="price">${money(p.price)}</p><p class="muted">${p.description}</p><button class="btn" onclick="addToCart('${p.id}')">Add to cart</button></div>`;}
+function renderCart(){const box=document.getElementById('cart-items');if(!box)return;const cart=getCart();if(!cart.length){box.innerHTML='<div class="notice">Your cart is empty. <a href="products.html">Browse products</a>.</div>';return;}const total=cart.reduce((s,p)=>s+p.price*p.qty,0);box.innerHTML=`<div class="cart-list">${cart.map(p=>`<div class="cart-row"><div class="cart-left"><span class="cart-emoji">${p.emoji}</span><div><strong>${p.name}</strong><div class="muted">${money(p.price)} each</div></div></div><div class="qty-controls"><button onclick="changeQty('${p.id}',-1)">−</button><strong>${p.qty}</strong><button onclick="changeQty('${p.id}',1)">+</button><button class="remove-btn" onclick="removeItem('${p.id}')">Remove</button></div><strong>${money(p.price*p.qty)}</strong></div>`).join('')}</div><div class="summary"><strong>Total: ${money(total)}</strong><a class="btn" href="checkout.html">Proceed to checkout</a></div>`;}
+function changeQty(id,delta){const cart=getCart();const p=cart.find(x=>x.id===id);if(p)p.qty+=delta;saveCart(cart.filter(x=>x.qty>0));renderCart();}
+function removeItem(id){saveCart(getCart().filter(x=>x.id!==id));renderCart();}
+function renderCheckout(){const box=document.getElementById('checkout-summary');if(!box)return;const cart=getCart();if(!cart.length){box.innerHTML='<div class="notice">Your cart is empty. <a href="products.html">Go shopping</a>.</div>';document.getElementById('checkout-form').style.display='none';return;}const total=cart.reduce((s,p)=>s+p.price*p.qty,0);box.innerHTML=`<div class="summary"><span>${cart.reduce((s,p)=>s+p.qty,0)} item(s)</span><strong>Order total: ${money(total)}</strong></div>`;}
+document.addEventListener('DOMContentLoaded',()=>{updateCartCount();if(document.getElementById('product-list')||document.getElementById('product-detail'))loadProducts();renderCart();renderCheckout();
+ const login=document.getElementById('login-form');if(login)login.addEventListener('submit',e=>{e.preventDefault();const data=new FormData(login);localStorage.setItem('shopEaseUser',JSON.stringify({name:data.get('name'),email:data.get('email')}));document.getElementById('login-message').textContent='Welcome, '+data.get('name')+'! Demo login successful.';login.reset();});
+ const contact=document.getElementById('contact-form');if(contact)contact.addEventListener('submit',e=>{e.preventDefault();document.getElementById('contact-message').innerHTML='<div class="notice">Thank you! Your demo message has been received on this page.</div>';contact.reset();});
+ const checkout=document.getElementById('checkout-form');if(checkout)checkout.addEventListener('submit',e=>{e.preventDefault();if(!getCart().length)return;const data=new FormData(checkout);alert('Thank you, '+data.get('name')+'! Your demo order has been placed.');saveCart([]);location.href='index.html';});
+});
